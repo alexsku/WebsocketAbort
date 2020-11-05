@@ -13,7 +13,6 @@ namespace WebsocketAbort.Controllers
     [Route("[controller]")]
     public class WebsocketController : ControllerBase
     {
-
         private readonly ILogger<WebsocketController> _logger;
 
         public WebsocketController(
@@ -26,7 +25,6 @@ namespace WebsocketAbort.Controllers
         [HttpGet]
         public async Task<IActionResult> TestConnectionAsync()
         {
-            using var canceller = new CancellationTokenSource();
             using var client = await HttpContext.WebSockets.AcceptWebSocketAsync();
             _ = Task.Run(() => {
                 Thread.Sleep(TimeSpan.FromMinutes(1));
@@ -39,7 +37,7 @@ namespace WebsocketAbort.Controllers
             {
                 while (new[] { WebSocketState.Open, WebSocketState.CloseSent }.Contains(client.State))
                 {
-                    var res = await client.ReceiveAsync(buffer, canceller.Token);
+                    var res = await client.ReceiveAsync(buffer, default);
                     if (res.MessageType == WebSocketMessageType.Close)
                         _logger.LogInformation("received Close from the client");
                     _logger.LogWarning("received data");
